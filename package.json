@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-polly": "^3.726.1",
+    "@aws-sdk/client-s3": "^3.726.1",
     "@clerk/nextjs": "^5.2.12",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-dialog": "^1.1.1",
