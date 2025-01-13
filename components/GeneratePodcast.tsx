@@ -137,6 +137,18 @@ const useGeneratePodcast = (props: GeneratePodcastProps) => {
     setIsGenerating(true);
 
     try {
+      const wordCount = text.split(/\s+/).length;
+
+      // Show initial toast for long text
+      let toastId;
+      if (wordCount > 500) {
+        toastId = toast({
+          title: "Processing long text",
+          description: "This might take a few moments...",
+          duration: 10000,
+        });
+      }
+
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: {
@@ -149,10 +161,15 @@ const useGeneratePodcast = (props: GeneratePodcastProps) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate speech");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate speech");
       }
 
       const audioBlob = await response.blob();
+      if (audioBlob.size === 0) {
+        throw new Error("Generated audio is empty");
+      }
+
       const fileName = `tts-${uuidv4()}.mp3`;
       const file = new File([audioBlob], fileName, { type: "audio/mpeg" });
 
@@ -161,22 +178,34 @@ const useGeneratePodcast = (props: GeneratePodcastProps) => {
       const storageId = (uploaded[0].response as any).storageId;
       props.setAudioStorageId(storageId);
 
-      // Get and set the audio URL
       const audioUrl = await getAudioUrl({ storageId });
-      props.setAudio(audioUrl!);
-      // Set audio duration
-      const audio = new Audio(audioUrl ?? undefined);
-      audio.addEventListener("loadedmetadata", () => {
-        props.setAudioDuration(audio.duration);
+      if (!audioUrl) {
+        throw new Error("Failed to get audio URL");
+      }
+
+      props.setAudio(audioUrl);
+
+      // Verify audio can be played
+      const audio = new Audio(audioUrl);
+      await new Promise((resolve, reject) => {
+        audio.addEventListener("loadedmetadata", () => {
+          props.setAudioDuration(audio.duration);
+          resolve(true);
+        });
+        audio.addEventListener("error", (e) => reject(e));
       });
 
       toast({
         title: "AWS Polly TTS Generated successfully",
+        description:
+          wordCount > 500 ? "Long text processed successfully" : undefined,
       });
     } catch (error) {
       console.error("Error in AWS Polly TTS generation:", error);
       toast({
         title: "Error generating TTS",
+        description:
+          error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
     } finally {
