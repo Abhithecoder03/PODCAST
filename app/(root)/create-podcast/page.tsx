@@ -44,87 +44,67 @@ const formSchema = z.object({
 });
 
 const CreatePodcast = () => {
-
-  const router=useRouter()
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-    
-  const [imagePrompt, setImagePrompt] = useState('');
-  const [imageStorageId, setImageStorageId] = useState<Id<"_storage"> | null>(null)
-  const [imageUrl, setImageUrl] = useState('');
-    
-  const [audioUrl, setAudioUrl] = useState('');
-  const [audioStorageId, setAudioStorageId] = useState<Id<"_storage"> | null>(null)
+
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [imageStorageId, setImageStorageId] = useState<Id<"_storage"> | null>(
+    null
+  );
+  const [imageUrl, setImageUrl] = useState("");
+
+  const [audioUrl, setAudioUrl] = useState("");
+  const [audioStorageId, setAudioStorageId] = useState<Id<"_storage"> | null>(
+    null
+  );
   const [audioDuration, setAudioDuration] = useState(0);
-    
-  const [voiceType, setVoiceType] = useState<string | null>(null);
-  const [voicePrompt, setVoicePrompt] = useState('');
-  const { toast } = useToast()
-  
-  const createPodcast=useMutation(api.podcasts.createPodcast)
-    
+
+  const [voicePrompt, setVoicePrompt] = useState("");
+  const { toast } = useToast();
+
+  const createPodcast = useMutation(api.podcasts.createPodcast);
+
   // ...
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        podcastTitle: "",
-        podcastDescription: "",
-       
+      podcastTitle: "",
+      podcastDescription: "",
     },
   });
 
   // 2. Define a submit handler.
   async function onSubmit(data: z.infer<typeof formSchema>) {
-       try {
-         setIsSubmitting(true);
-         if (!audioUrl || !imageUrl || !voiceType) {
-           toast({
-             title: "Please provide audio and image and voice type to generate a podcast",
-             variant:"destructive",
-           })
-           throw new Error("Please generate an audio and image first");
-
-         }
-        const podcast= await createPodcast({
-            podcastTitle: data.podcastTitle,
-            podcastDescription: data.podcastDescription,
-            audioUrl,
-            imageUrl,
-           voiceType,
-            imagePrompt,
-           voicePrompt,
-           views: 0,
-           audioDuration,
-           audioStorageId: audioStorageId!,
-            imageStorageId: imageStorageId!,
-        })
-         toast({ title: "podcast created" })
-         setIsSubmitting(false)
-         router.push('/')
-         
-       } catch (error) {
-         console.log(error);
-        //  toast({
-        //     title: "Error creating podcast",
-        //     variant:"destructive",
-        //  })
-         setIsSubmitting(false);
-       }
+    try {
+      setIsSubmitting(true);
+      if (!audioUrl || !imageUrl) {
+        toast({
+          title: "Please provide audio and image to generate a podcast",
+          variant: "destructive",
+        });
+        throw new Error("Please generate an audio and image first");
+      }
+      const podcast = await createPodcast({
+        podcastTitle: data.podcastTitle,
+        podcastDescription: data.podcastDescription,
+        audioUrl,
+        imageUrl,
+        voiceType: "",
+        imagePrompt,
+        voicePrompt,
+        views: 0,
+        audioDuration,
+        audioStorageId: audioStorageId!,
+        imageStorageId: imageStorageId!,
+      });
+      toast({ title: "podcast created" });
+      setIsSubmitting(false);
+      router.push("/");
+    } catch (error) {
+      console.log(error);
+      setIsSubmitting(false);
     }
-    const voiceCategory = [
-        { name: "Adam", id: "pNInz6obpgDQGcFmaJgB" },
-        { name: "Alice", id: "Xb7hH8MSUJpSbSDYk0k2" },
-        { name: "Antoni", id: "ErXwobaYiN019PkySvjV" },
-        { name: "Arnold", id: "VR6AewLTigWG4xSOukaG" },
-        { name: "Bill", id: "pqHfZKP75CvOlQylNhV4" },
-        { name: "Brian", id: "nPczCjzI2devNBz1zQrb" },
-        { name: "Callum", id: "N2lVS1w4EtoT3dr4eOWO" },
-        { name: "Charlie", id: "IKne3meq5aSn9XLyUdCD" },
-        { name: "Charlotte", id: "XB0fDUnXU5powFXDhCwa" },
-        { name: "Chris", id: "iP95p4xoKVk53GoZ742B" },
-        { name: "Clyde", id: "2EiwWnXFnvU5JabPnv8n" },
-        { name: "Daniel", id: "onwK4e9ZLuTAKqWW03F9" },
-      ];;
-  
+  }
 
   return (
     <section className="mt-10 flex flex-col">
@@ -155,42 +135,8 @@ const CreatePodcast = () => {
                 </FormItem>
               )}
             />
-            <div className="flex flex-col gap-2.5">
-              <Label className="text-16 font-bold text-white-1">
-                Select AI Voice
-              </Label>
-              <Select onValueChange={(value)=>setVoiceType(value)}>
-                <SelectTrigger
-                  className={cn(
-                    "text-16 w-full border-none bg-black-1 text-gray-1 focus-visible:ring-offset-orange-1"
-                  )}
-                >
-                  <SelectValue
-                    placeholder="Select AI Voice"
-                    className="placeholder:text-gray-1"
-                  />
-                </SelectTrigger>
-                <SelectContent className="text-16 border-none bg-black-1 font-bold text-white-1 focus:ring-orange-1">
-                  {voiceCategory.map((category) => (
-                    <SelectItem
-                      key={category.name}
-                      value={category.id}
-                      className="capitalize focus:bg-orange-1"
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-                {/* {voiceType && (
-                  <audio
-                    src={`/${voiceType}.mp3`}
-                    autoPlay
-                    className="hidden"
-                  />
-                )} */}
-              </Select>
-                      </div>
-                      <FormField
+
+            <FormField
               control={form.control}
               name="podcastDescription"
               render={({ field }) => (
@@ -210,38 +156,42 @@ const CreatePodcast = () => {
                 </FormItem>
               )}
             />
-                  </div>
-                  <div className=" flex flex-col pt-10">
-                      <GeneratePodcast
-                          setAudioStorageId={setAudioStorageId!}
-                          setAudio={setAudioUrl}
-                          voiceType={voiceType!}
-                          audio={audioUrl}
-                          voicePrompt={voicePrompt}
-                          setVoicePrompt={setVoicePrompt}
-                          setAudioDuration={setAudioDuration}
-                      />
-                     <GenerateThumbnail 
-               setImage={setImageUrl}
-               setImageStorageId={setImageStorageId}
-               image={imageUrl}
-               imagePrompt={imagePrompt}
-               setImagePrompt={setImagePrompt}
-              />
+          </div>
+          <div className=" flex flex-col pt-10">
+            <GeneratePodcast
+              setAudioStorageId={setAudioStorageId!}
+              setAudio={setAudioUrl}
+              audio={audioUrl}
+              voicePrompt={voicePrompt}
+              setVoicePrompt={setVoicePrompt}
+              setAudioDuration={setAudioDuration}
+            />
+            <GenerateThumbnail
+              setImage={setImageUrl}
+              setImageStorageId={setImageStorageId}
+              image={imageUrl}
+              imagePrompt={imagePrompt}
+              setImagePrompt={setImagePrompt}
+            />
 
-                      
-                      <div className="mt-10 w-full">
-                          <Button type="submit" className="text-16 w-full bg-orange-1 py-4 font-extrabold text-white-1 transition-all duration-500 hover:bg-black-1">
-                              {isSubmitting ? <>
-                                Submitting
-                                  <Loader size={20} className="animate-spin ml-2" />
-                                 
-                              </>:("Submit & Publish Podcast")}</Button>
-                      </div>
-                  </div>
+            <div className="mt-10 w-full">
+              <Button
+                type="submit"
+                className="text-16 w-full bg-orange-1 py-4 font-extrabold text-white-1 transition-all duration-500 hover:bg-black-1"
+              >
+                {isSubmitting ? (
+                  <>
+                    Submitting
+                    <Loader size={20} className="animate-spin ml-2" />
+                  </>
+                ) : (
+                  "Submit & Publish Podcast"
+                )}
+              </Button>
+            </div>
+          </div>
         </form>
-          </Form>
-         
+      </Form>
     </section>
   );
 };

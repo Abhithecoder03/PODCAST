@@ -15,7 +15,7 @@ export const sidebarLinks = [
       label: "Create Podcast",
   },
   {
-    imgURL: "/icons/microphone.svg",
+    imgURL: "/icons/avatar.svg",
     route: "/profile",
     label: "Profile",
   },

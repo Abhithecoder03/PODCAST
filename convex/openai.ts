@@ -2,47 +2,95 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import axios from "axios";
 
-const ELEVEN_LABS_API_KEY = process.env.ELEVEN_LABS_API_KEY||"sk_685a17d7ee9336a1089812c495b448033e15ef0cfaa7973c";
+const ELEVEN_LABS_API_KEY = process.env.NEXT_PUBLIC_ELEVEN_LABS_API_KEY||"sk_c8e2d316db5cd722de9a0aba20e5367fe6d7cd892b9a5cef";
 const token="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"
 
+// export const generateAudioAction = action({
+//   args: { input: v.string(), voice: v.string() },
+//     handler: async (_, { voice, input }) => {
+//     console.log(voice,ELEVEN_LABS_API_KEY)
+//     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice}`;
+//     const headers = {
+//       "Content-Type": "application/json",
+//       "xi-api-key": ELEVEN_LABS_API_KEY,
+//     };
+//     const data = {
+//       text: input,
+//       model_id: "eleven_monolingual_v1",
+//       voice_settings: {
+//         stability: 0.5, // Adjust as needed
+//         similarity_boost: 0.5, // Adjust as needed
+//         speed: 0.85, // Add the speed parameter if supported
+//       },
+//     };
+  
+//    try {
+//     const response = await axios.post(url, data, {
+//       headers,
+//       responseType: 'arraybuffer',
+//     });
+
+//     if (response.status === 200 && response.data.byteLength > 0) {
+//       console.log('Audio generated successfully');
+//       return response.data;
+//     } else {
+//       console.error('No audio data received');
+//       throw new Error('No audio data received');
+//     }
+//   } catch (error) {
+//     console.error('Error generating audio:',  error);
+//     throw new Error('Failed to generate audio');
+//   }
+// },
+// });
 export const generateAudioAction = action({
   args: { input: v.string(), voice: v.string() },
-    handler: async (_, { voice, input }) => {
-    console.log(voice,ELEVEN_LABS_API_KEY)
+  handler: async (_, { voice, input }) => {
+    console.log("Voice:", voice);
+    console.log("API Key:", ELEVEN_LABS_API_KEY);
+
     const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice}`;
     const headers = {
       "Content-Type": "application/json",
       "xi-api-key": ELEVEN_LABS_API_KEY,
     };
+
     const data = {
       text: input,
       model_id: "eleven_monolingual_v1",
       voice_settings: {
-        stability: 0.5, // Adjust as needed
-        similarity_boost: 0.5, // Adjust as needed
-        speed: 0.85, // Add the speed parameter if supported
+        stability: 0.5,
+        similarity_boost: 0.5,
+        speed: 0.85,
       },
     };
-  
-   try {
-    const response = await axios.post(url, data, {
-      headers,
-      responseType: 'arraybuffer',
-    });
 
-    if (response.status === 200 && response.data.byteLength > 0) {
-      console.log('Audio generated successfully');
-      return response.data;
-    } else {
-      console.error('No audio data received');
-      throw new Error('No audio data received');
+    try {
+      const response = await axios.post(url, data, {
+        headers,
+        responseType: "arraybuffer",
+      });
+
+      if (response.status === 200 && response.data.byteLength > 0) {
+        console.log("Audio generated successfully");
+        return response.data;
+      } else {
+        console.error("No audio data received. Response:", response.data);
+        throw new Error("No audio data received");
+      }
+    } catch (error) {
+      if (error) {
+        console.error("Error response data:", error);
+        console.error("Error response status:", error);
+        console.error("Error response headers:", error);
+      } else {
+        console.error("Error message:", error);
+      }
+      throw new Error("Failed to generate audio");
     }
-  } catch (error) {
-    console.error('Error generating audio:',  error);
-    throw new Error('Failed to generate audio');
-  }
-},
+  },
 });
+
 
 export const generateThumbnailAction = action({
   args: {
